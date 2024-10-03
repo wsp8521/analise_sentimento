@@ -32,17 +32,23 @@ def grafico_barra(data):
     #return fig.show()  # Descomente se quiser visualizar o gráfico
     return fig
 
+import nltk
+from nltk.corpus import stopwords
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+
 def nuvem_palavras(texto, coluna_texto, sentimento):
     # Carregar stopwords em português
-    nltk.download('stopwords')
+    nltk.download('stopwords', quiet=True)  # Desabilita mensagens de download
     portuguese_stopwords = set(stopwords.words('portuguese'))
+    
     # Filtrando as resenhas com base no sentimento especificado
     texto_sentimento = texto.query(f"Sentimento == '{sentimento}'")[coluna_texto]
     
     if texto_sentimento.empty:
         print("Nenhum comentário encontrado para o sentimento especificado.")
-        return
-    
+        return None  # Retorna None se não houver comentários
+
     # Unindo todas as resenhas em uma única string
     texto_unido = " ".join(texto_sentimento)
 
@@ -51,12 +57,30 @@ def nuvem_palavras(texto, coluna_texto, sentimento):
     palavras_filtradas = [palavra for palavra in palavras if palavra not in portuguese_stopwords]
     texto_filtrado = " ".join(palavras_filtradas)
 
-    # Criando e exibindo a nuvem de palavras
+    # Criando a nuvem de palavras
     nuvem_palavras = WordCloud(width=400, height=400, max_words=50, background_color='white').generate(texto_filtrado)
+    
+    # Criando a figura para a nuvem de palavras
     plt.figure(figsize=(10, 7))
     plt.imshow(nuvem_palavras, interpolation='bilinear')
     plt.axis('off')
-    return plt.show()
+    
+    # Definindo o nome do arquivo com base no sentimento
+    if sentimento == 'POS':
+        nome_arquivo = 'nuvem_palavra_positiva.png'
+    elif sentimento == 'NEG':
+        nome_arquivo = 'nuvem_palavra_negativa.png'
+    else:
+        print("Sentimento inválido. Deve ser 'POS' ou 'NEG'.")
+        return None  # Retorna None se o sentimento for inválido
+
+    # Salvando a imagem como PNG
+    plt.savefig(nome_arquivo)  
+    plt.close()  # Fecha a figura para liberar memória
+
+    # Retorna o caminho da imagem
+    return nome_arquivo
+
 
 # # Chamar a função para exibir a nuvem de palavras para as resenhas positivas
 # nuvem_palavras(dados, 'Resenha', 'NEG')
