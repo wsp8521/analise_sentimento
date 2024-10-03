@@ -1,0 +1,1 @@
+nuvem_palavras(modelo_ia(dados_csv), 'Comentario','NEU')
